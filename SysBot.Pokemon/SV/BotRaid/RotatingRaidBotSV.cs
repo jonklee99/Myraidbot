@@ -1,5 +1,6 @@
 using Discord;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PKHeX.Core;
 using RaidCrawler.Core.Structures;
 using SysBot.Base;
@@ -71,7 +72,6 @@ namespace SysBot.Pokemon.SV.BotRaid
         public static bool IsBlueberry = false;
         private static DateTime TimeForRollBackCheck = DateTime.Now;
         private string denHexSeed;
-        private int seedMismatchCount = 0;
         private readonly bool indicesInitialized = false;
         private static readonly int KitakamiDensCount = 0;
         private static readonly int BlueberryDensCount = 0;
@@ -1567,26 +1567,12 @@ namespace SysBot.Pokemon.SV.BotRaid
 
             if (!denHexSeed.Equals(currentSeed, StringComparison.CurrentCultureIgnoreCase))
             {
-                seedMismatchCount++;
-                Log($"Raid Den and Current Seed do not match. Mismatch count: {seedMismatchCount}");
-
-                if (seedMismatchCount >= 2)
-                {
-                    Log("Seeds have mismatched 2 times in a row. Refreshing the map.");
-                    shouldRefreshMap = true;
-                    seedMismatchCount = 0;
-                    return 2;
-                }
-
-                Log("Injecting correct seed.");
+                Log("Raid Den and Current Seed do not match. Injecting correct seed.");
                 await CloseGame(Hub.Config, token).ConfigureAwait(false);
                 await StartGameRaid(Hub.Config, token).ConfigureAwait(false);
+
                 Log("Seed injected Successfully!");
-                return 2;
-            }
-            else
-            {
-                seedMismatchCount = 0;
+                return 2; 
             }
 
             if (Settings.ActiveRaids[RotationCount].AddedByRACommand)
@@ -3224,19 +3210,24 @@ namespace SysBot.Pokemon.SV.BotRaid
                     }
                     if (seed == set)
                     {
-                        // Species and Form
-                        RaidEmbedInfoHelpers.RaidSpecies = (Species)allEncounters[i].Species;
-                        RaidEmbedInfoHelpers.RaidSpeciesForm = allEncounters[i].Form;
+                        var useTypeEmojis = Settings.EmbedToggles.MoveTypeEmojis;
+                        var typeEmojis = Settings.EmbedToggles.CustomTypeEmojis
+                            .Where(e => !string.IsNullOrEmpty(e.EmojiCode))
+                            .ToDictionary(
+                                e => e.MoveType,
+                                e => $"{e.EmojiCode}"
+                            );
+                        var res = GetSpecialRewards(allRewards[i], Settings.EmbedToggles.RewardsToShow);
+                        RaidEmbedInfoHelpers.SpecialRewards = res;
+                        if (string.IsNullOrEmpty(res))
+                            res = string.Empty;
+                        else
+                            res = "**Special Rewards:**\n" + res;
 
-                        // Update Species and SpeciesForm in ActiveRaids
-                        if (!Settings.ActiveRaids[a].ForceSpecificSpecies)
-                        {
-                            Settings.ActiveRaids[a].Species = (Species)allEncounters[i].Species;
-                            Settings.ActiveRaids[a].SpeciesForm = allEncounters[i].Form;
-                        }
-
-                        // Encounter Info
                         int raid_delivery_group_id = Settings.ActiveRaids[a].GroupID;
+                        var areaText = $"{Areas.GetArea((int)(allRaids[i].Area - 1), allRaids[i].MapParent)} - Den {allRaids[i].Den}";
+                        Log($"Seed {seed:X8} found for {(Species)allEncounters[i].Species} in {areaText}");
+                        var stars = allRaids[i].IsEvent ? allEncounters[i].Stars : allRaids[i].GetStarCount(allRaids[i].Difficulty, StoryProgress, allRaids[i].IsBlack);
                         var encounter = allRaids[i].GetTeraEncounter(container, allRaids[i].IsEvent ? 3 : StoryProgress, raid_delivery_group_id);
                         if (encounter != null)
                         {
@@ -3246,55 +3237,17 @@ namespace SysBot.Pokemon.SV.BotRaid
                         {
                             RaidEmbedInfoHelpers.RaidLevel = 75;
                         }
-
-                        // Star Rating
-                        var stars = allRaids[i].IsEvent ? allEncounters[i].Stars : allRaids[i].GetStarCount(allRaids[i].Difficulty, StoryProgress, allRaids[i].IsBlack);
-
-                        // Raid Title
                         var pkinfo = RaidExtensions<PK9>.GetRaidPrintName(pk);
-                        var titlePrefix = allRaids[i].IsShiny ? "Shiny" : "";
-                        RaidEmbedInfoHelpers.RaidEmbedTitle = $"{stars} ★ {titlePrefix} {(Species)allEncounters[i].Species}{pkinfo}";
-
-                        // Gender
-                        var maleEmoji = Settings.EmbedToggles.MaleEmoji.EmojiString;
-                        var femaleEmoji = Settings.EmbedToggles.FemaleEmoji.EmojiString;
-                        RaidEmbedInfoHelpers.RaidSpeciesGender = pk.Gender switch
-                        {
-                            0 when !string.IsNullOrEmpty(maleEmoji) => $"{maleEmoji} Male",
-                            1 when !string.IsNullOrEmpty(femaleEmoji) => $"{femaleEmoji} Female",
-                            _ => pk.Gender == 0 ? "Male" : pk.Gender == 1 ? "Female" : "Genderless"
-                        };
-
-                        // Nature
-                        RaidEmbedInfoHelpers.RaidSpeciesNature = GameInfo.Strings.Natures[(int)pk.Nature];
-
-                        // Ability
-                        RaidEmbedInfoHelpers.RaidSpeciesAbility = $"{(Ability)pk.Ability}";
-
-                        // IVs
-                        RaidEmbedInfoHelpers.RaidSpeciesIVs = $"{pk.IV_HP}/{pk.IV_ATK}/{pk.IV_DEF}/{pk.IV_SPA}/{pk.IV_SPD}/{pk.IV_SPE}";
-
-                        // Tera Type
-                        RaidEmbedInfoHelpers.RaidSpeciesTeraType = $"{(MoveType)allRaids[i].GetTeraType(encounter)}";
-
-                        // Moves
                         var strings = GameInfo.GetStrings(1);
                         var moves = new ushort[4] { allEncounters[i].Move1, allEncounters[i].Move2, allEncounters[i].Move3, allEncounters[i].Move4 };
-                        var moveNames = new List<string>();
-                        var useTypeEmojis = Settings.EmbedToggles.MoveTypeEmojis;
-                        var typeEmojis = Settings.EmbedToggles.CustomTypeEmojis
-                           .Where(e => !string.IsNullOrEmpty(e.EmojiCode))
-                           .ToDictionary(
-                               e => e.MoveType,
-                               e => $"{e.EmojiCode}"
-                           );
 
+                        var moveNames = new List<string>();
                         for (int j = 0; j < moves.Length; j++)
                         {
                             if (moves[j] != 0)
                             {
                                 string moveName = strings.Move[moves[j]];
-                                byte moveTypeId = MoveInfo.GetType(moves[j], pk.Context);
+                                byte moveTypeId = MoveInfo.GetType(moves[j], (EntityContext)pk.Context);
                                 MoveType moveType = (MoveType)moveTypeId;
 
                                 if (useTypeEmojis && typeEmojis.TryGetValue(moveType, out var moveEmoji))
@@ -3309,7 +3262,6 @@ namespace SysBot.Pokemon.SV.BotRaid
                         }
                         RaidEmbedInfoHelpers.Moves = string.Join("\n", moveNames);
 
-                        // Extra Moves
                         var extraMoveNames = new List<string>();
                         if (allEncounters[i].ExtraMoves.Length != 0)
                         {
@@ -3318,7 +3270,7 @@ namespace SysBot.Pokemon.SV.BotRaid
                                 if (allEncounters[i].ExtraMoves[j] != 0)
                                 {
                                     string moveName = strings.Move[allEncounters[i].ExtraMoves[j]];
-                                    byte moveTypeId = MoveInfo.GetType(allEncounters[i].ExtraMoves[j], pk.Context);
+                                    byte moveTypeId = MoveInfo.GetType(allEncounters[i].ExtraMoves[j], (EntityContext)pk.Context);
                                     MoveType moveType = (MoveType)moveTypeId;
 
                                     if (useTypeEmojis && typeEmojis.TryGetValue(moveType, out var moveEmoji))
@@ -3333,22 +3285,25 @@ namespace SysBot.Pokemon.SV.BotRaid
                             }
                             RaidEmbedInfoHelpers.ExtraMoves = string.Join("\n", extraMoveNames);
                         }
-
-                        // Scale Text and Number
+                        var maleEmoji = Settings.EmbedToggles.MaleEmoji.EmojiString;
+                        var femaleEmoji = Settings.EmbedToggles.FemaleEmoji.EmojiString;
+                        var titlePrefix = allRaids[i].IsShiny ? "Shiny" : "";
+                        RaidEmbedInfoHelpers.RaidSpecies = (Species)allEncounters[i].Species;
+                        RaidEmbedInfoHelpers.RaidSpeciesForm = allEncounters[i].Form;
+                        RaidEmbedInfoHelpers.RaidEmbedTitle = $"{stars} ★ {titlePrefix} {(Species)allEncounters[i].Species}{pkinfo}";
+                        RaidEmbedInfoHelpers.RaidSpeciesGender = pk.Gender switch
+                        {
+                            0 when !string.IsNullOrEmpty(maleEmoji) => $"{maleEmoji} Male",
+                            1 when !string.IsNullOrEmpty(femaleEmoji) => $"{femaleEmoji} Female",
+                            _ => pk.Gender == 0 ? "Male" : pk.Gender == 1 ? "Female" : "Genderless"
+                        };
+                        RaidEmbedInfoHelpers.RaidSpeciesNature = GameInfo.Strings.Natures[(int)pk.Nature];
+                        RaidEmbedInfoHelpers.RaidSpeciesAbility = $"{(Ability)pk.Ability}";
+                        RaidEmbedInfoHelpers.RaidSpeciesIVs = $"{pk.IV_HP}/{pk.IV_ATK}/{pk.IV_DEF}/{pk.IV_SPA}/{pk.IV_SPD}/{pk.IV_SPE}";
+                        RaidEmbedInfoHelpers.RaidSpeciesTeraType = $"{(MoveType)allRaids[i].GetTeraType(encounter)}";
                         RaidEmbedInfoHelpers.ScaleText = $"{PokeSizeDetailedUtil.GetSizeRating(pk.Scale)}";
-                        RaidEmbedInfoHelpers.ScaleNumber = pk.Scale;
-
-                        // Special Rewards
-                        var res = GetSpecialRewards(allRewards[i], Settings.EmbedToggles.RewardsToShow);
-                        RaidEmbedInfoHelpers.SpecialRewards = res;
-                        if (string.IsNullOrEmpty(res))
-                            res = string.Empty;
-                        else
-                            res = "**Special Rewards:**\n" + res;
-
-                        // Area Text
-                        var areaText = $"{Areas.GetArea((int)(allRaids[i].Area - 1), allRaids[i].MapParent)} - Den {allRaids[i].Den}";
-                        Log($"Seed {seed:X8} found for {(Species)allEncounters[i].Species} in {areaText}");
+                        RaidEmbedInfoHelpers.ScaleNumber = pk.Scale;                        
+                        // Update Species and SpeciesForm in ActiveRaids
 
                         if (!Settings.ActiveRaids[a].ForceSpecificSpecies)
                         {
@@ -3464,7 +3419,7 @@ namespace SysBot.Pokemon.SV.BotRaid
                 if (pk.Moves[i] != 0)
                 {
                     string moveName = strings.Move[pk.Moves[i]];
-                    byte moveTypeId = MoveInfo.GetType(pk.Moves[i], pk.Context);
+                    byte moveTypeId = MoveInfo.GetType(pk.Moves[i], (EntityContext)pk.Context);
                     MoveType moveType = (MoveType)moveTypeId;
 
                     if (useTypeEmojis && typeEmojis.TryGetValue(moveType, out var moveEmoji))

@@ -273,7 +273,7 @@ namespace SysBot.Pokemon.WinForms
         }
 
         private void RefreshMap_Click(object sender, EventArgs e)
-        { 
+        {
             SaveCurrentConfig();
             LogUtil.LogInfo("Sending RefreshMap command to all bots.", "Refresh Map");
             SendAll(BotControlCommand.RefreshMap);
@@ -812,6 +812,11 @@ namespace SysBot.Pokemon.WinForms
 
             B_RebootReset.BackColor = RebootBlue;
             B_RebootReset.ForeColor = ElegantWhite;
+        }
+
+        private void Tab_Bots_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

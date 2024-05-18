@@ -126,7 +126,6 @@ namespace SysBot.Pokemon.WinForms
 
         private static void StartDownloadProcess(string downloadUrl)
         {
-            Main.IsUpdating = true;
             // Start the download by opening the URL in the default web browser
             Process.Start(new ProcessStartInfo
             {

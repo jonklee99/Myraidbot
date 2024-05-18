@@ -20,7 +20,6 @@ namespace SysBot.Pokemon.WinForms
         private IPokeBotRunner RunningEnvironment { get; set; }
 
         public readonly ISwitchConnectionAsync? SwitchConnection;
-        public static bool IsUpdating { get; set; } = false;
 
         public Main()
         {
@@ -33,8 +32,7 @@ namespace SysBot.Pokemon.WinForms
 
         private async Task InitializeAsync()
         {
-            if (IsUpdating)
-                return;
+
             string discordName = string.Empty;
 
             // Update checker
@@ -200,10 +198,6 @@ namespace SysBot.Pokemon.WinForms
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (IsUpdating)
-            {
-                return;
-            }
             SaveCurrentConfig();
             var bots = RunningEnvironment;
             if (!bots.IsRunning)
@@ -528,9 +522,6 @@ namespace SysBot.Pokemon.WinForms
 
             B_RebootReset.BackColor = RebootBlue;
             B_RebootReset.ForeColor = ElegantWhite;
-
-            B_RefreshMap.BackColor = RefreshMap;
-            B_RefreshMap.ForeColor = StartGreen;
         }
 
         private void ApplyGengarTheme()
@@ -605,9 +596,6 @@ namespace SysBot.Pokemon.WinForms
 
             B_RebootReset.BackColor = RebootBlue;
             B_RebootReset.ForeColor = ElegantWhite;
-
-            B_RefreshMap.BackColor = RefreshMap;
-            B_RefreshMap.ForeColor = StartGreen;
         }
 
         private void ApplyLightTheme()
@@ -679,9 +667,6 @@ namespace SysBot.Pokemon.WinForms
 
             B_RebootReset.BackColor = RebootBlue;
             B_RebootReset.ForeColor = ElegantWhite;
-
-            B_RefreshMap.BackColor = RefreshMap;
-            B_RefreshMap.ForeColor = StartGreen;
         }
 
         private void ApplyPokemonTheme()
@@ -755,9 +740,6 @@ namespace SysBot.Pokemon.WinForms
 
             B_RebootReset.BackColor = RebootBlue;
             B_RebootReset.ForeColor = ElegantWhite;
-
-            B_RefreshMap.BackColor = RefreshMap;
-            B_RefreshMap.ForeColor = StartGreen;
         }
 
         private void ApplyDarkTheme()
@@ -830,9 +812,6 @@ namespace SysBot.Pokemon.WinForms
 
             B_RebootReset.BackColor = RebootBlue;
             B_RebootReset.ForeColor = ElegantWhite;
-
-            B_RefreshMap.BackColor = RefreshMap;
-            B_RefreshMap.ForeColor = StartGreen;
         }
     }
 }

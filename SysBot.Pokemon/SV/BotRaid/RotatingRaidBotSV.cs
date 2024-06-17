@@ -3445,8 +3445,6 @@ namespace SysBot.Pokemon.SV.BotRaid
                 }
             }
             Log($"Seed {denHexSeedUInt:X8} not found in any region.");
-            await CloseGame(Hub.Config, token).ConfigureAwait(false);
-            await StartGameRaid(Hub.Config, token).ConfigureAwait(false);
         }
 
         public static (PK9, Embed) RaidInfoCommand(string seedValue, int contentType, TeraRaidMapParent map, int storyProgressLevel, int raidDeliveryGroupID, List<string> rewardsToShow, bool moveTypeEmojis, List<MoveTypeEmojiInfo> customTypeEmojis, int queuePosition = 0, bool isEvent = false)

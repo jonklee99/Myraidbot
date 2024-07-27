@@ -20,7 +20,6 @@ using static SysBot.Base.SwitchButton;
 using static SysBot.Pokemon.RotatingRaidSettingsSV;
 using static SysBot.Pokemon.SV.BotRaid.Blocks;
 using System.Text.RegularExpressions;
-using System.Net.Mime;
 
 namespace SysBot.Pokemon.SV.BotRaid
 {
@@ -879,7 +878,6 @@ namespace SysBot.Pokemon.SV.BotRaid
                 {
                     Log($"We had {Settings.LobbyOptions.SkipRaidLimit} lost/empty raids.. Moving on!");
                     await SanitizeRotationCount(token).ConfigureAwait(false);
-                    await CurrentRaidInfo(null, "", false, true, true, false, null, false, token).ConfigureAwait(false);
                     await EnqueueEmbed(null, "", false, false, true, false, token).ConfigureAwait(false);
                     ready = true;
                 }
@@ -1875,7 +1873,6 @@ namespace SysBot.Pokemon.SV.BotRaid
         {
             if (!await IsConnectedToLobby(token))
                 return (false, new List<(ulong, RaidMyStatus)>());
-            await CurrentRaidInfo(null, "", false, false, false, false, null, false, token).ConfigureAwait(false);
             await EnqueueEmbed(null, "", false, false, false, false, token).ConfigureAwait(false);
 
             List<(ulong, RaidMyStatus)> lobbyTrainers = [];
@@ -2400,12 +2397,14 @@ namespace SysBot.Pokemon.SV.BotRaid
                 ImageUrl = imageBytes != null ? $"attachment://{fileName}" : null, // Set ImageUrl based on imageBytes
             };
 
-            if (upnext)
+            if (!raidstart && !upnext)
             {
-                await CurrentRaidInfo(null, code, false, true, true, false, turl, false, token).ConfigureAwait(false);
-            }
-            else if (!raidstart)
-            {
+                if (Settings.ActiveRaids[RotationCount].AddedByRACommand &&
+                    Settings.ActiveRaids[RotationCount].Title != "Mystery Shiny Raid" &&
+                    code != "Free For All")
+                {
+                    await Task.Delay(Settings.EmbedToggles.RequestEmbedTime * 1000, token).ConfigureAwait(false);
+                }
                 await CurrentRaidInfo(null, code, false, false, false, false, turl, false, token).ConfigureAwait(false);
             }
             // Only include footer if not posting 'upnext' embed with the 'Preparing Raid' title
@@ -2552,6 +2551,8 @@ namespace SysBot.Pokemon.SV.BotRaid
 
         private async Task CurrentRaidInfo(List<string>? names, string code, bool hatTrick, bool disband, bool upnext, bool raidstart, string? imageUrl, bool lobbyFull, CancellationToken token)
         {
+            if (!Settings.RaidSettings.JoinSharedRaidsProgram)
+                return;
             var raidInfo = new
             {
                 RaidEmbedTitle = CleanEmojiStrings(RaidEmbedInfoHelpers.RaidEmbedTitle),

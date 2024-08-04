@@ -1631,6 +1631,7 @@ namespace SysBot.Pokemon.SV.BotRaid
                 await GoHome(Hub.Config, token).ConfigureAwait(false);
                 await AdvanceDaySV(token).ConfigureAwait(false);
                 await SaveGame(Hub.Config, token).ConfigureAwait(false);
+                await RecoverToOverworld(token).ConfigureAwait(false);
                 shouldRefreshMap = false;
                 if (!token.IsCancellationRequested)
                 {

@@ -322,7 +322,7 @@ namespace SysBot.Base
                 }
                 catch (Exception ex)
                 {
-                    LogError($"Socket exception thrown while receiving data:\n{ex.Message}");
+                    LogError($"<@754156803906076712> Socket exception thrown while receiving data:\n{ex.Message}");
                     return Array.Empty<byte>();
                 }
 

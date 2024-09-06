@@ -1900,8 +1900,9 @@ namespace SysBot.Pokemon.SV.BotRaid
         private async Task<string> GetRaidCode(CancellationToken token)
         {
             var data = await SwitchConnection.PointerPeek(6, Offsets.TeraRaidCodePointer, token).ConfigureAwait(false);
-            TeraRaidCode = Encoding.ASCII.GetString(data).ToLower(); // Convert to lowercase for easier reading
+            TeraRaidCode = Encoding.ASCII.GetString(data);
             return $"{TeraRaidCode}";
+
         }
 
         private async Task<bool> CheckIfTrainerBanned(RaidMyStatus trainer, ulong nid, int player, CancellationToken token)

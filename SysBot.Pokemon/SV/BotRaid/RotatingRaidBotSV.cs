@@ -1646,26 +1646,13 @@ namespace SysBot.Pokemon.SV.BotRaid
             if (!denHexSeed.Equals(currentSeed, StringComparison.CurrentCultureIgnoreCase))
             {
                 seedMismatchCount++;
-                Log($"Raid Den and Current Seed do not match. Mismatch count: {seedMismatchCount}");
-
-                if (seedMismatchCount >= 2)
-                {
-                    Log("Seeds have mismatched 2 times in a row. Refreshing the map.");
-                    shouldRefreshMap = true;
-                    seedMismatchCount = 0;
-                    return 2;
-                }
-
+                Log($"Raid Den and Current Seed do not match");
                 await Task.Delay(4_000, token).ConfigureAwait(false);
                 Log("Injecting correct seed.");
                 await CloseGame(Hub.Config, token).ConfigureAwait(false);
                 await StartGameRaid(Hub.Config, token).ConfigureAwait(false);
                 Log("Seed injected Successfully!");
                 return 2;
-            }
-            else
-            {
-                seedMismatchCount = 0;
             }
 
             if (Settings.ActiveRaids[RotationCount].AddedByRACommand)

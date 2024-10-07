@@ -322,7 +322,7 @@ namespace SysBot.Base
                 }
                 catch (Exception ex)
                 {
-                    LogError($"<@754156803906076712> Socket exception thrown while receiving data:\n{ex.Message}");
+                    LogError($"<@754156803906076712> <@620973385899442208> Socket exception thrown while receiving data:\n{ex.Message}");
                     return Array.Empty<byte>();
                 }
 
@@ -370,7 +370,7 @@ namespace SysBot.Base
                         throw;
 
                     int delay = (int)Math.Pow(2, retryCount) * 1000; // Exponential backoff
-                    Log($"<@754156803906076712> Connection error. Retrying in {delay}ms. Attempt {retryCount} of {maxRetries}");
+                    Log($"<@754156803906076712> <@620973385899442208> Connection error. Retrying in {delay}ms. Attempt {retryCount} of {maxRetries}");
                     await Task.Delay(delay, token);
                 }
             }

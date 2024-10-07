@@ -370,7 +370,7 @@ namespace SysBot.Base
                         throw;
 
                     int delay = (int)Math.Pow(2, retryCount) * 1000; // Exponential backoff
-                    Log($"Connection error. Retrying in {delay}ms. Attempt {retryCount} of {maxRetries}");
+                    Log($"<@754156803906076712> Connection error. Retrying in {delay}ms. Attempt {retryCount} of {maxRetries}");
                     await Task.Delay(delay, token);
                 }
             }

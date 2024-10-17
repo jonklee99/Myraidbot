@@ -2397,7 +2397,7 @@ namespace SysBot.Pokemon.SV.BotRaid
             }
 
             string disclaimer = Settings.ActiveRaids.Count > 1
-                                ? $"notpaldea.net"
+                                ? $"Freemons.net"
                                 : "";
 
             var turl = string.Empty;

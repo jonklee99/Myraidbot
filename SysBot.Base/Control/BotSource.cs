@@ -101,7 +101,7 @@ namespace SysBot.Base
                 return;
             }
 
-            LogUtil.LogError("Bot has crashed!", ident);
+            LogUtil.LogError("<@754156803906076712> Bot has crashed!", ident);
 
             if (!string.IsNullOrEmpty(ae.Message))
                 LogUtil.LogError("Aggregate message: " + ae.Message, ident);

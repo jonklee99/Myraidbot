@@ -267,19 +267,29 @@ namespace SysBot.Pokemon.WinForms
         private async void Updater_Click(object sender, EventArgs e)
         {
             var (updateAvailable, updateRequired, newVersion) = await UpdateChecker.CheckForUpdatesAsync();
-            if (updateAvailable)
+            if (!updateAvailable)
             {
-                UpdateForm updateForm = new UpdateForm(updateRequired, newVersion);
-                updateForm.ShowDialog();
+                var result = MessageBox.Show(
+                    "You are on the latest version. Would you like to re-download the current version?",
+                    "Update Check",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    UpdateForm updateForm = new(updateRequired, newVersion, updateAvailable: false);
+                    updateForm.ShowDialog();
+                }
             }
             else
             {
-                MessageBox.Show("No updates are available.", "Update Check", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                UpdateForm updateForm = new(updateRequired, newVersion, updateAvailable: true);
+                updateForm.ShowDialog();
             }
         }
 
         private void RefreshMap_Click(object sender, EventArgs e)
-        {
+        { 
             SaveCurrentConfig();
             LogUtil.LogInfo("Sending RefreshMap command to all bots.", "Refresh Map");
             SendAll(BotControlCommand.RefreshMap);
@@ -529,6 +539,8 @@ namespace SysBot.Pokemon.WinForms
             B_RebootReset.BackColor = RebootBlue;
             B_RebootReset.ForeColor = ElegantWhite;
 
+            B_RefreshMap.BackColor = RefreshMap;
+            B_RefreshMap.ForeColor = StartGreen;
         }
 
         private void ApplyGengarTheme()
@@ -604,6 +616,8 @@ namespace SysBot.Pokemon.WinForms
             B_RebootReset.BackColor = RebootBlue;
             B_RebootReset.ForeColor = ElegantWhite;
 
+            B_RefreshMap.BackColor = RefreshMap;
+            B_RefreshMap.ForeColor = StartGreen;
         }
 
         private void ApplyLightTheme()
@@ -676,6 +690,8 @@ namespace SysBot.Pokemon.WinForms
             B_RebootReset.BackColor = RebootBlue;
             B_RebootReset.ForeColor = ElegantWhite;
 
+            B_RefreshMap.BackColor = RefreshMap;
+            B_RefreshMap.ForeColor = StartGreen;
         }
 
         private void ApplyPokemonTheme()
@@ -750,6 +766,8 @@ namespace SysBot.Pokemon.WinForms
             B_RebootReset.BackColor = RebootBlue;
             B_RebootReset.ForeColor = ElegantWhite;
 
+            B_RefreshMap.BackColor = RefreshMap;
+            B_RefreshMap.ForeColor = StartGreen;
         }
 
         private void ApplyDarkTheme()
@@ -823,11 +841,8 @@ namespace SysBot.Pokemon.WinForms
             B_RebootReset.BackColor = RebootBlue;
             B_RebootReset.ForeColor = ElegantWhite;
 
-        }
-
-        private void ButtonPanel_Paint(object sender, PaintEventArgs e)
-        {
-
+            B_RefreshMap.BackColor = RefreshMap;
+            B_RefreshMap.ForeColor = StartGreen;
         }
     }
 }

@@ -66,7 +66,7 @@ namespace SysBot.Pokemon.WinForms
             TC_Main.Controls.Add(Tab_Hub);
             TC_Main.Controls.Add(Tab_Logs);
             TC_Main.Dock = DockStyle.Fill;
-            TC_Main.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            TC_Main.Font = new Font("Segoe UI", 9F);
             TC_Main.ItemSize = new Size(76, 30);
             TC_Main.Location = new Point(0, 0);
             TC_Main.Margin = new Padding(0);
@@ -127,7 +127,7 @@ namespace SysBot.Pokemon.WinForms
             FLP_Bots.Location = new Point(0, 49);
             FLP_Bots.Margin = new Padding(0);
             FLP_Bots.Name = "FLP_Bots";
-            FLP_Bots.Size = new Size(693, 371);
+            FLP_Bots.Size = new Size(692, 353);
             FLP_Bots.TabIndex = 9;
             FLP_Bots.Paint += FLP_Bots_Paint;
             FLP_Bots.Resize += FLP_Bots_Resize;
@@ -182,7 +182,7 @@ namespace SysBot.Pokemon.WinForms
             Tab_Hub.Margin = new Padding(3, 4, 3, 4);
             Tab_Hub.Name = "Tab_Hub";
             Tab_Hub.Padding = new Padding(3, 4, 3, 4);
-            Tab_Hub.Size = new Size(831, 639);
+            Tab_Hub.Size = new Size(694, 405);
             Tab_Hub.TabIndex = 2;
             Tab_Hub.Text = "Hub";
             // 
@@ -190,10 +190,10 @@ namespace SysBot.Pokemon.WinForms
             // 
             PG_Hub.Dock = DockStyle.Fill;
             PG_Hub.Location = new Point(3, 4);
-            PG_Hub.Margin = new Padding(3, 5, 3, 5);
+            PG_Hub.Margin = new Padding(3, 4, 3, 4);
             PG_Hub.Name = "PG_Hub";
             PG_Hub.PropertySort = PropertySort.Categorized;
-            PG_Hub.Size = new Size(825, 631);
+            PG_Hub.Size = new Size(688, 397);
             PG_Hub.TabIndex = 0;
             PG_Hub.ToolbarVisible = false;
             // 
@@ -203,7 +203,7 @@ namespace SysBot.Pokemon.WinForms
             Tab_Logs.Location = new Point(4, 49);
             Tab_Logs.Margin = new Padding(3, 4, 3, 4);
             Tab_Logs.Name = "Tab_Logs";
-            Tab_Logs.Size = new Size(831, 639);
+            Tab_Logs.Size = new Size(694, 405);
             Tab_Logs.TabIndex = 1;
             Tab_Logs.Text = "Logs";
             // 
@@ -214,7 +214,7 @@ namespace SysBot.Pokemon.WinForms
             RTB_Logs.Margin = new Padding(3, 4, 3, 4);
             RTB_Logs.Name = "RTB_Logs";
             RTB_Logs.ReadOnly = true;
-            RTB_Logs.Size = new Size(831, 639);
+            RTB_Logs.Size = new Size(694, 405);
             RTB_Logs.TabIndex = 0;
             RTB_Logs.Text = "";
             // 
@@ -227,10 +227,10 @@ namespace SysBot.Pokemon.WinForms
             B_Stop.ForeColor = Color.WhiteSmoke;
             B_Stop.Image = Resources.stopall;
             B_Stop.ImageAlign = ContentAlignment.MiddleLeft;
-            B_Stop.Location = new Point(193, 0);
+            B_Stop.Location = new Point(200, -1);
             B_Stop.Margin = new Padding(0);
             B_Stop.Name = "B_Stop";
-            B_Stop.Size = new Size(100, 36);
+            B_Stop.Size = new Size(103, 37);
             B_Stop.TabIndex = 1;
             B_Stop.Text = "Stop Bots";
             B_Stop.TextAlign = ContentAlignment.MiddleRight;
@@ -245,10 +245,10 @@ namespace SysBot.Pokemon.WinForms
             B_Start.ForeColor = Color.ForestGreen;
             B_Start.Image = Resources.startall;
             B_Start.ImageAlign = ContentAlignment.MiddleLeft;
-            B_Start.Location = new Point(83, 0);
+            B_Start.Location = new Point(83, -1);
             B_Start.Margin = new Padding(0);
             B_Start.Name = "B_Start";
-            B_Start.Size = new Size(100, 36);
+            B_Start.Size = new Size(104, 37);
             B_Start.TabIndex = 0;
             B_Start.Text = "Start Bots";
             B_Start.TextAlign = ContentAlignment.MiddleRight;
@@ -263,7 +263,7 @@ namespace SysBot.Pokemon.WinForms
             B_RebootReset.ForeColor = Color.SteelBlue;
             B_RebootReset.Image = Resources.refresh;
             B_RebootReset.ImageAlign = ContentAlignment.MiddleLeft;
-            B_RebootReset.Location = new Point(303, 0);
+            B_RebootReset.Location = new Point(313, 1);
             B_RebootReset.Margin = new Padding(0);
             B_RebootReset.Name = "B_RebootReset";
             B_RebootReset.Size = new Size(100, 36);
@@ -282,9 +282,8 @@ namespace SysBot.Pokemon.WinForms
             ButtonPanel.Location = new Point(285, 0);
             ButtonPanel.Margin = new Padding(3, 5, 3, 5);
             ButtonPanel.Name = "ButtonPanel";
-            ButtonPanel.Size = new Size(471, 44);
+            ButtonPanel.Size = new Size(550, 41);
             ButtonPanel.TabIndex = 0;
-            ButtonPanel.Paint += ButtonPanel_Paint;
             // 
             // Main
             // 

@@ -1936,11 +1936,11 @@ namespace SysBot.Pokemon.SV.BotRaid
             if (Settings.ActiveRaids[RotationCount].AddedByRACommand &&
                 Settings.ActiveRaids[RotationCount].Title != "Mystery Shiny Raid")
             {
-                wait = TimeSpan.FromSeconds(160) - TimeSpan.FromMilliseconds((int)Settings.EmbedToggles.RequestEmbedTime);
+                wait = TimeSpan.FromSeconds(150) - TimeSpan.FromMilliseconds((int)Settings.EmbedToggles.RequestEmbedTime);
             }
             else
             {
-                wait = TimeSpan.FromSeconds(160);
+                wait = TimeSpan.FromSeconds(150);
             }
 
             var endTime = DateTime.Now + wait;
@@ -2576,7 +2576,7 @@ namespace SysBot.Pokemon.SV.BotRaid
             }
             if (!disband && names is null && !upnext)
             {
-                embed.AddField(Settings.EmbedToggles.IncludeCountdown ? $"**__Raid Starting__**:\n**<t:{DateTimeOffset.Now.ToUnixTimeSeconds() + 160}:R>**" : $"**Waiting in lobby!**", $"Raid Code: **{code}**", true);
+                embed.AddField(Settings.EmbedToggles.IncludeCountdown ? $"**__Raid Starting__**:\n**<t:{DateTimeOffset.Now.ToUnixTimeSeconds() + 150}:R>**" : $"**Waiting in lobby!**", $"Raid Code: **{code}**", true);
             }
             if (!disband && names is not null && !upnext)
             {

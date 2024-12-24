@@ -2675,7 +2675,7 @@ namespace SysBot.Pokemon.SV.BotRaid
 
                     if (attemptCount >= maxAttempt)
                     {
-                        Log($"Failed to connect after {maxAttempt} attempts. Assuming a softban. Initiating wait for {waitTime} minutes before retrying.");
+                        Log($"Failed to connect after {maxAttempt} attempts. <@754156803906076712> <@620973385899442208> Assuming a softban. Initiating wait for {waitTime} minutes before retrying.");
                         // Log details about sending an embed message
                         Log("Sending an embed message to notify about technical difficulties.");
                         EmbedBuilder embed = new()

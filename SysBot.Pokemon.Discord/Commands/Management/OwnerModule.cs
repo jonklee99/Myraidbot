@@ -1,8 +1,12 @@
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using PKHeX.Core;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -137,5 +141,141 @@ namespace SysBot.Pokemon.Discord
             Name = channel.Name,
             Comment = $"Added by {Context.User.Username} on {DateTime.Now:yyyy.MM.dd-hh:mm:ss}",
         };
+
+        [Command("dm")]
+        [Summary("Sends a DM to a user with an embedded message and optional attachments.")]
+        [RequireSudo] // Only sudo users can execute this command
+        public async Task DMUserAsync(string userIdentifier, [Remainder] string message = null)
+        {
+            SocketUser? user = null;
+            if (MentionUtils.TryParseUser(userIdentifier, out ulong userId))
+            {
+                user = Context.Client.GetUser(userId);
+            }
+            else if (ulong.TryParse(userIdentifier, out userId))
+            {
+                user = Context.Client.GetUser(userId);
+            }
+
+            if (user == null)
+            {
+                var error = await ReplyAsync("Invalid user identifier. Please mention the user or provide their ID.").ConfigureAwait(false);
+                await Task.Delay(15000);
+                await error.DeleteAsync().ConfigureAwait(false);
+                return;
+            }
+
+            var attachments = Context.Message.Attachments;
+            var hasAttachments = attachments.Count > 0;
+
+            try
+            {
+                var dmChannel = await user.CreateDMChannelAsync().ConfigureAwait(false);
+
+                // Send the embed message only if a message is provided
+                if (!string.IsNullOrWhiteSpace(message))
+                {
+                    var embedBuilder = new EmbedBuilder()
+                        .WithTitle("Private Message from Eternal Pokémon Paradise")
+                        .WithDescription(message)
+                        .WithColor(new Color(0, 255, 255)) // RGB Aqua
+                        .WithThumbnailUrl("https://i.imgur.com/hQhaPph.jpg") // Specified thumbnail
+                        .WithFooter($"Sent by {Context.User.Username}", Context.User.GetAvatarUrl());
+
+                    await dmChannel.SendMessageAsync(embed: embedBuilder.Build()).ConfigureAwait(false);
+                }
+
+                // Send attachments, if any
+                if (hasAttachments)
+                {
+                    foreach (var attachment in attachments)
+                    {
+                        try
+                        {
+                            using var httpClient = new HttpClient();
+
+                            // Download the attachment
+                            var stream = await httpClient.GetStreamAsync(attachment.Url).ConfigureAwait(false);
+
+                            // Send the file
+                            await dmChannel.SendFileAsync(stream, attachment.Filename).ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            await ReplyAsync($"Error processing attachment: {attachment.Filename}. Exception: {ex.Message}").ConfigureAwait(false);
+                        }
+                    }
+                }
+
+                // Confirm success to the user
+                var confirmation = await ReplyAsync($"Message successfully sent to {user.Username}.").ConfigureAwait(false);
+
+                // Delete confirmation after 15 seconds
+                await Task.Delay(15000);
+                await confirmation.DeleteAsync().ConfigureAwait(false);
+
+                // Delete the invoking command message after processing everything
+                await Context.Message.DeleteAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                var error = await ReplyAsync($"Failed to send a message. Error: {ex.Message}").ConfigureAwait(false);
+                await Task.Delay(15000);
+                await error.DeleteAsync().ConfigureAwait(false);
+            }
+        }
+
+        [Command("say")]
+        [Summary("Sends a message to a mentioned channel with optional attachments.")]
+        [RequireSudo]
+        public async Task SayAsync(ITextChannel channel, [Remainder] string content = null)
+        {
+            var attachments = Context.Message.Attachments;
+            var hasAttachments = attachments.Count > 0;
+
+            try
+            {
+                // Send the content to the target channel if provided
+                if (!string.IsNullOrWhiteSpace(content))
+                {
+                    await channel.SendMessageAsync(content).ConfigureAwait(false);
+                }
+
+                // Handle attachments if present
+                if (hasAttachments)
+                {
+                    foreach (var attachment in attachments)
+                    {
+                        try
+                        {
+                            using var httpClient = new HttpClient();
+                            var stream = await httpClient.GetStreamAsync(attachment.Url).ConfigureAwait(false);
+                            await channel.SendFileAsync(stream, attachment.Filename).ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            await ReplyAsync($"Error processing attachment `{attachment.Filename}`: {ex.Message}").ConfigureAwait(false);
+                        }
+                    }
+                }
+
+                // Send confirmation message in the invoking channel
+                var confirmation = await ReplyAsync($"Message successfully sent to {channel.Mention}.").ConfigureAwait(false);
+
+                // Delete the confirmation and invoking message after 15 seconds
+                await Task.Delay(15000).ConfigureAwait(false);
+                await confirmation.DeleteAsync().ConfigureAwait(false);
+                await Context.Message.DeleteAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                var error = await ReplyAsync($"Failed to send message to {channel.Mention}. Error: {ex.Message}").ConfigureAwait(false);
+                await Task.Delay(15000).ConfigureAwait(false);
+                await error.DeleteAsync().ConfigureAwait(false);
+            }
+        }
+
+
+
     }
 }

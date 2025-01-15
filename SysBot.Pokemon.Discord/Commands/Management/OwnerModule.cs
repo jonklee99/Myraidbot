@@ -179,8 +179,7 @@ namespace SysBot.Pokemon.Discord
                         .WithTitle("Private Message from Eternal Pokémon Paradise")
                         .WithDescription(message)
                         .WithColor(new Color(0, 255, 255)) // RGB Aqua
-                        .WithThumbnailUrl("https://i.imgur.com/hQhaPph.jpg") // Specified thumbnail
-                        .WithFooter($"Sent by {Context.User.Username}", Context.User.GetAvatarUrl());
+                        .WithThumbnailUrl("https://i.imgur.com/hQhaPph.jpg"); // Specified thumbnail
 
                     await dmChannel.SendMessageAsync(embed: embedBuilder.Build()).ConfigureAwait(false);
                 }

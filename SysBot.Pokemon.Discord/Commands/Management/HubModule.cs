@@ -16,6 +16,17 @@ namespace SysBot.Pokemon.Discord
         [Summary("Gets the status of the bot environment.")]
         public async Task GetStatusAsync()
         {
+            // Delete the command usage
+            try
+            {
+                await Context.Message.DeleteAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // Log or handle any issues with deleting the message
+                Console.WriteLine($"Failed to delete the command message: {ex.Message}");
+            }
+
             var me = SysCord<T>.Runner;
             var hub = me.Hub;
 

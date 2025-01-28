@@ -17,6 +17,17 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task GetStatusAsync()
         {
+            // Delete the command usage
+            try
+            {
+                await Context.Message.DeleteAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // Log or handle any issues with deleting the message
+                Console.WriteLine($"Failed to delete the command message: {ex.Message}");
+            }
+
             var me = SysCord<T>.Runner;
             var bots = me.Bots.Select(z => z.Bot).OfType<PokeRoutineExecutorBase>().ToArray();
             if (bots.Length == 0)
@@ -60,6 +71,17 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task StartBotAsync()
         {
+            // Delete the command usage
+            try
+            {
+                await Context.Message.DeleteAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // Log or handle any issues with deleting the message
+                Console.WriteLine($"Failed to delete the command message: {ex.Message}");
+            }
+
             string ip = GetBotIPFromJsonConfig();
             var bot = SysCord<T>.Runner.GetBot(ip);
             if (bot == null)
@@ -77,6 +99,17 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task StopBotAsync()
         {
+            // Delete the command usage
+            try
+            {
+                await Context.Message.DeleteAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // Log or handle any issues with deleting the message
+                Console.WriteLine($"Failed to delete the command message: {ex.Message}");
+            }
+
             string ip = GetBotIPFromJsonConfig();
             var bot = SysCord<T>.Runner.GetBot(ip);
             if (bot == null)
@@ -129,6 +162,17 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task RestartBotAsync()
         {
+            // Delete the command usage
+            try
+            {
+                await Context.Message.DeleteAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // Log or handle any issues with deleting the message
+                Console.WriteLine($"Failed to delete the command message: {ex.Message}");
+            }
+
             string ip = GetBotIPFromJsonConfig();
             var bot = SysCord<T>.Runner.GetBot(ip);
             if (bot == null)

@@ -54,6 +54,7 @@ namespace SysBot.Pokemon.Discord
                 );
 
             await ReplyAsync("Here's a bit about me!", embed: builder.Build()).ConfigureAwait(false);
+            await Context.Message.DeleteAsync();
         }
 
         private static string GetUptime() => (DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"dd\.hh\:mm\:ss");

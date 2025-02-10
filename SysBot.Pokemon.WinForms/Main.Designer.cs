@@ -127,7 +127,7 @@ namespace SysBot.Pokemon.WinForms
             FLP_Bots.Location = new Point(0, 49);
             FLP_Bots.Margin = new Padding(0);
             FLP_Bots.Name = "FLP_Bots";
-            FLP_Bots.Size = new Size(692, 375);
+            FLP_Bots.Size = new Size(692, 366);
             FLP_Bots.TabIndex = 9;
             FLP_Bots.Paint += FLP_Bots_Paint;
             FLP_Bots.Resize += FLP_Bots_Resize;
@@ -227,10 +227,10 @@ namespace SysBot.Pokemon.WinForms
             B_Stop.ForeColor = Color.WhiteSmoke;
             B_Stop.Image = Resources.stopall;
             B_Stop.ImageAlign = ContentAlignment.MiddleLeft;
-            B_Stop.Location = new Point(199, 0);
+            B_Stop.Location = new Point(195, 0);
             B_Stop.Margin = new Padding(0);
             B_Stop.Name = "B_Stop";
-            B_Stop.Size = new Size(103, 38);
+            B_Stop.Size = new Size(103, 40);
             B_Stop.TabIndex = 1;
             B_Stop.Text = "Stop Bots";
             B_Stop.TextAlign = ContentAlignment.MiddleRight;
@@ -245,7 +245,7 @@ namespace SysBot.Pokemon.WinForms
             B_Start.ForeColor = Color.ForestGreen;
             B_Start.Image = Resources.startall;
             B_Start.ImageAlign = ContentAlignment.MiddleLeft;
-            B_Start.Location = new Point(85, 0);
+            B_Start.Location = new Point(81, 0);
             B_Start.Margin = new Padding(0);
             B_Start.Name = "B_Start";
             B_Start.Size = new Size(104, 38);
@@ -263,7 +263,7 @@ namespace SysBot.Pokemon.WinForms
             B_RebootReset.ForeColor = Color.SteelBlue;
             B_RebootReset.Image = Resources.refresh;
             B_RebootReset.ImageAlign = ContentAlignment.MiddleLeft;
-            B_RebootReset.Location = new Point(310, 0);
+            B_RebootReset.Location = new Point(307, 0);
             B_RebootReset.Margin = new Padding(0);
             B_RebootReset.Name = "B_RebootReset";
             B_RebootReset.Size = new Size(101, 38);
@@ -279,10 +279,10 @@ namespace SysBot.Pokemon.WinForms
             ButtonPanel.Controls.Add(B_RebootReset);
             ButtonPanel.Controls.Add(B_Stop);
             ButtonPanel.Controls.Add(B_Start);
-            ButtonPanel.Location = new Point(284, 0);
+            ButtonPanel.Location = new Point(285, 0);
             ButtonPanel.Margin = new Padding(3, 5, 3, 5);
             ButtonPanel.Name = "ButtonPanel";
-            ButtonPanel.Size = new Size(414, 37);
+            ButtonPanel.Size = new Size(410, 40);
             ButtonPanel.TabIndex = 0;
             // 
             // Main

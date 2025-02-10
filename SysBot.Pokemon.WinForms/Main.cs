@@ -538,9 +538,6 @@ namespace SysBot.Pokemon.WinForms
 
             B_RebootReset.BackColor = RebootBlue;
             B_RebootReset.ForeColor = ElegantWhite;
-
-            B_RefreshMap.BackColor = RefreshMap;
-            B_RefreshMap.ForeColor = StartGreen;
         }
 
         private void ApplyGengarTheme()
@@ -615,9 +612,6 @@ namespace SysBot.Pokemon.WinForms
 
             B_RebootReset.BackColor = RebootBlue;
             B_RebootReset.ForeColor = ElegantWhite;
-
-            B_RefreshMap.BackColor = RefreshMap;
-            B_RefreshMap.ForeColor = StartGreen;
         }
 
         private void ApplyLightTheme()
@@ -689,9 +683,6 @@ namespace SysBot.Pokemon.WinForms
 
             B_RebootReset.BackColor = RebootBlue;
             B_RebootReset.ForeColor = ElegantWhite;
-
-            B_RefreshMap.BackColor = RefreshMap;
-            B_RefreshMap.ForeColor = StartGreen;
         }
 
         private void ApplyPokemonTheme()
@@ -765,9 +756,6 @@ namespace SysBot.Pokemon.WinForms
 
             B_RebootReset.BackColor = RebootBlue;
             B_RebootReset.ForeColor = ElegantWhite;
-
-            B_RefreshMap.BackColor = RefreshMap;
-            B_RefreshMap.ForeColor = StartGreen;
         }
 
         private void ApplyDarkTheme()
@@ -840,9 +828,6 @@ namespace SysBot.Pokemon.WinForms
 
             B_RebootReset.BackColor = RebootBlue;
             B_RebootReset.ForeColor = ElegantWhite;
-
-            B_RefreshMap.BackColor = RefreshMap;
-            B_RefreshMap.ForeColor = StartGreen;
         }
     }
 }

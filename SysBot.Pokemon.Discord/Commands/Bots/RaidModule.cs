@@ -561,13 +561,13 @@ namespace SysBot.Pokemon.Discord.Commands.Bots
             }
             if (level < 1 || level > 7) 
             {
-                await ReplyAsync("Invalid raid level. Please enter a level between 3 and 7.").ConfigureAwait(false); 
+                await ReplyAsync("Invalid raid level. Please enter a level between 1 and 7.").ConfigureAwait(false); 
                 return;
             }
             var gameProgress = ConvertToGameProgress(storyProgressLevel);
             if (gameProgress == GameProgress.None)
             {
-                await ReplyAsync("Invalid Story Progress Level. Please enter a value between 3 and 6.").ConfigureAwait(false);
+                await ReplyAsync("Invalid Story Progress Level. Please enter a value between 1 and 6.").ConfigureAwait(false);
                 return;
             }
             var settings = Hub.Config.RotatingRaidSV;

@@ -23,6 +23,43 @@ using System.Text.RegularExpressions;
 
 namespace SysBot.Pokemon.SV.BotRaid
 {
+
+    public class RaidCountStorage
+    {
+        private readonly string filePath;
+
+        public RaidCountStorage(string baseDirectory)
+        {
+            var directoryPath = Path.Combine(baseDirectory, "raidfilessv");
+            Directory.CreateDirectory(directoryPath);
+            filePath = Path.Combine(directoryPath, "raidcount.json");
+
+            if (!File.Exists(filePath))
+            {
+                File.WriteAllText(filePath, JsonConvert.SerializeObject(new RaidCountData(), Formatting.Indented));
+            }
+        }
+
+        public RaidCountData LoadRaidCounts()
+        {
+            string json = File.ReadAllText(filePath);
+            return JsonConvert.DeserializeObject<RaidCountData>(json) ?? new RaidCountData();
+        }
+
+        public void SaveRaidCounts(RaidCountData data)
+        {
+            string json = JsonConvert.SerializeObject(data, Formatting.Indented);
+            File.WriteAllText(filePath, json);
+        }
+    }
+
+    public class RaidCountData
+    {
+        public int TotalRaids { get; set; } = 0;
+        public int Wins { get; set; } = 0;
+        public int Losses { get; set; } = 0;
+    }
+
     public class RotatingRaidBotSV : PokeRoutineExecutor9SV
     {
         private readonly PokeRaidHub<PK9> Hub;
@@ -31,12 +68,23 @@ namespace SysBot.Pokemon.SV.BotRaid
         public static Dictionary<string, List<(int GroupID, int Index, string DenIdentifier)>> SpeciesToGroupIDMap =
         new(StringComparer.OrdinalIgnoreCase);
         private static readonly HttpClient httpClient = new HttpClient();
+        private readonly RaidCountStorage raidStorage;
+        private RaidCountData raidCountData;
+
 
         public RotatingRaidBotSV(PokeBotState cfg, PokeRaidHub<PK9> hub) : base(cfg)
         {
             Hub = hub;
             Settings = hub.Config.RotatingRaidSV;
+            raidStorage = new RaidCountStorage(AppDomain.CurrentDomain.BaseDirectory);
+            raidCountData = raidStorage.LoadRaidCounts();
+
+            // Load previous counts from the JSON file
+            RaidCount = raidCountData.TotalRaids;
+            WinCount = raidCountData.Wins;
+            LossCount = raidCountData.Losses;
         }
+
 
         public class PlayerInfo
         {
@@ -1010,18 +1058,27 @@ namespace SysBot.Pokemon.SV.BotRaid
                 {
                     Log("Yay! We defeated the raid!");
                     WinCount++;
+                    raidCountData.Wins++;
                 }
                 else
                 {
                     Log("Dang, we lost the raid.");
                     LossCount++;
+                    raidCountData.Losses++;
                 }
+
+                RaidCount++;
+                raidCountData.TotalRaids++;
+
+                // Save updated raid count to the JSON file
+                raidStorage.SaveRaidCounts(raidCountData);
             }
             else
             {
                 Log("No trainers available to check win/loss status.");
             }
         }
+
 
         private async Task OverrideTodaySeed(CancellationToken token)
         {

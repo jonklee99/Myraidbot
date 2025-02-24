@@ -58,6 +58,8 @@ namespace SysBot.Pokemon.SV.BotRaid
         public int TotalRaids { get; set; } = 0;
         public int Wins { get; set; } = 0;
         public int Losses { get; set; } = 0;
+        public long TotalUptimeMinutes { get; set; } = 0; // Accumulated uptime in minutes
+        public DateTime LastStartTime { get; set; } = DateTime.UtcNow; // Track when bot last started
     }
 
     public class RotatingRaidBotSV : PokeRoutineExecutor9SV
@@ -83,9 +85,27 @@ namespace SysBot.Pokemon.SV.BotRaid
             RaidCount = raidCountData.TotalRaids;
             WinCount = raidCountData.Wins;
             LossCount = raidCountData.Losses;
+
+            // Update start time for this session
+            raidCountData.LastStartTime = DateTime.UtcNow;
+            raidStorage.SaveRaidCounts(raidCountData);
+
+            // Ensure uptime is saved when the bot shuts down
+            AppDomain.CurrentDomain.ProcessExit += (sender, e) => UpdateUptimeOnShutdown();
         }
+        public void UpdateUptimeOnShutdown()
+        {
+            TimeSpan sessionUptime = DateTime.UtcNow - raidCountData.LastStartTime;
+            raidCountData.TotalUptimeMinutes += (long)sessionUptime.TotalMinutes; // Convert to minutes and add
+            raidStorage.SaveRaidCounts(raidCountData);
 
-
+            Log($"Uptime saved: {raidCountData.TotalUptimeMinutes} minutes.");
+        }
+        public string GetFormattedUptime()
+        {
+            TimeSpan uptime = TimeSpan.FromMinutes(raidCountData.TotalUptimeMinutes);
+            return $"{uptime.Days}d {uptime.Hours}h {uptime.Minutes}m";
+        }
         public class PlayerInfo
         {
             public string OT { get; set; }
@@ -173,9 +193,13 @@ namespace SysBot.Pokemon.SV.BotRaid
 
         public override async Task RebootReset(CancellationToken t)
         {
+            // Save uptime before rebooting
+            UpdateUptimeOnShutdown();
+
             await ReOpenGame(new PokeRaidHubConfig(), t).ConfigureAwait(false);
             await HardStop().ConfigureAwait(false);
             await Task.Delay(2_000, t).ConfigureAwait(false);
+
             if (!t.IsCancellationRequested)
             {
                 Log("Restarting the inner loop.");
@@ -515,13 +539,16 @@ namespace SysBot.Pokemon.SV.BotRaid
                         return; // Exit the InnerLoop method after reboot and reset
                     }
                 }
+                // Ensure uptime is saved before exiting the loop
+                UpdateUptimeOnShutdown();
+
                 if (Settings.RaidSettings.TotalRaidsToHost > 0 && raidsHosted != 0)
                     Log("Total raids to host has been met.");
             }
             catch (Exception ex)
             {
                 Log($"An unexpected error occurred in InnerLoop: {ex.Message}");
-                // Handle other exceptions as needed
+                UpdateUptimeOnShutdown(); // Ensure uptime is saved even if an error occurs
             }
         }
 
@@ -529,6 +556,9 @@ namespace SysBot.Pokemon.SV.BotRaid
         {
             try
             {
+                // Save uptime before completely stopping
+                UpdateUptimeOnShutdown();
+
                 Directory.Delete("cache", true);
             }
             catch (Exception)
@@ -650,6 +680,8 @@ namespace SysBot.Pokemon.SV.BotRaid
             };
             EchoUtil.RaidEmbed(null, "", embed);
 
+            // Save uptime before restart
+            UpdateUptimeOnShutdown();
             await ReOpenGame(new PokeRaidHubConfig(), t).ConfigureAwait(false);
             await HardStop().ConfigureAwait(false);
             await Task.Delay(2_000, t).ConfigureAwait(false);
@@ -2531,15 +2563,16 @@ namespace SysBot.Pokemon.SV.BotRaid
             {
                 string programIconUrl = $"https://raw.githubusercontent.com/bdawg1989/sprites/main/imgs/icon4.png";
                 int raidsInRotationCount = Hub.Config.RotatingRaidSV.ActiveRaids.Count(r => !r.AddedByRACommand);
-                // Calculate uptime
-                TimeSpan uptime = DateTime.Now - StartTime;
 
-                // Check for singular or plural days/hours
+                // Retrieve stored accumulated uptime
+                TimeSpan uptime = TimeSpan.FromMinutes(raidCountData.TotalUptimeMinutes);
+
+                // Check for singular or plural labels
                 string dayLabel = uptime.Days == 1 ? "day" : "days";
                 string hourLabel = uptime.Hours == 1 ? "hour" : "hours";
                 string minuteLabel = uptime.Minutes == 1 ? "minute" : "minutes";
 
-                // Format the uptime string, omitting the part if the value is 0
+                // Format the uptime string
                 string uptimeFormatted = "";
                 if (uptime.Days > 0)
                 {
@@ -2556,12 +2589,14 @@ namespace SysBot.Pokemon.SV.BotRaid
 
                 // Trim any excess whitespace from the string
                 uptimeFormatted = uptimeFormatted.Trim();
+
                 embed.WithFooter(new EmbedFooterBuilder()
                 {
-                    Text = $"Completed Raids: {RaidCount} (W: {WinCount} | L: {LossCount})\nActiveRaids: {raidsInRotationCount} | Uptime: {uptimeFormatted}\n" + disclaimer,
+                    Text = $"Completed Raids: {raidCountData.TotalRaids} (W: {raidCountData.Wins} | L: {raidCountData.Losses})\nActiveRaids: {raidsInRotationCount} | Uptime: {uptimeFormatted}\n" + disclaimer,
                     IconUrl = programIconUrl
                 });
             }
+
 
             // Prepare the tera icon URL
             string teraType = RaidEmbedInfoHelpers.RaidSpeciesTeraType.ToLower();

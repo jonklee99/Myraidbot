@@ -1081,8 +1081,6 @@ namespace SysBot.Pokemon.SV.BotRaid
                     raidCountData.Losses++;
                 }
 
-                RaidCount++;
-                raidCountData.TotalRaids++;
             }
             else
             {

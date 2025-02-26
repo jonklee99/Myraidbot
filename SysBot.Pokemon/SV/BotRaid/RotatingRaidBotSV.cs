@@ -59,7 +59,7 @@ namespace SysBot.Pokemon.SV.BotRaid
         public int Wins { get; set; } = 0;
         public int Losses { get; set; } = 0;
         public long TotalUptimeMinutes { get; set; } = 0; // Accumulated uptime in minutes
-        public DateTime LastStartTime { get; set; } = DateTime.UtcNow; // Track when bot last started
+        public long LastRaidTimestamp { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeSeconds(); // Store last raid timestamp
     }
 
     public class RotatingRaidBotSV : PokeRoutineExecutor9SV
@@ -86,26 +86,13 @@ namespace SysBot.Pokemon.SV.BotRaid
             WinCount = raidCountData.Wins;
             LossCount = raidCountData.Losses;
 
-            // Update start time for this session
-            raidCountData.LastStartTime = DateTime.UtcNow;
-            raidStorage.SaveRaidCounts(raidCountData);
+            // Prevent adding offline time by resetting LastRaidTimestamp on startup
+            raidCountData.LastRaidTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-            // Ensure uptime is saved when the bot shuts down
-            AppDomain.CurrentDomain.ProcessExit += (sender, e) => UpdateUptimeOnShutdown();
-        }
-        public void UpdateUptimeOnShutdown()
-        {
-            TimeSpan sessionUptime = DateTime.UtcNow - raidCountData.LastStartTime;
-            raidCountData.TotalUptimeMinutes += (long)sessionUptime.TotalMinutes; // Convert to minutes and add
+            // Save the updated timestamp to ensure correct tracking
             raidStorage.SaveRaidCounts(raidCountData);
+        }
 
-            Log($"Uptime saved: {raidCountData.TotalUptimeMinutes} minutes.");
-        }
-        public string GetFormattedUptime()
-        {
-            TimeSpan uptime = TimeSpan.FromMinutes(raidCountData.TotalUptimeMinutes);
-            return $"{uptime.Days}d {uptime.Hours}h {uptime.Minutes}m";
-        }
         public class PlayerInfo
         {
             public string OT { get; set; }
@@ -193,9 +180,6 @@ namespace SysBot.Pokemon.SV.BotRaid
 
         public override async Task RebootReset(CancellationToken t)
         {
-            // Save uptime before rebooting
-            UpdateUptimeOnShutdown();
-
             await ReOpenGame(new PokeRaidHubConfig(), t).ConfigureAwait(false);
             await HardStop().ConfigureAwait(false);
             await Task.Delay(2_000, t).ConfigureAwait(false);
@@ -500,6 +484,12 @@ namespace SysBot.Pokemon.SV.BotRaid
                         (partyReady, _) = await ReadTrainers(token).ConfigureAwait(false);
                         if (!partyReady)
                         {
+                            Log("Empty raid detected, abandoning.");
+                            EmptyRaid++;
+
+                            // Ensure uptime updates even if the raid was abandoned
+                            UpdateUptime();
+
                             if (LostRaid >= Settings.LobbyOptions.SkipRaidLimit && Settings.LobbyOptions.LobbyMethod == LobbyMethodOptions.SkipRaid)
                             {
                                 await SkipRaidOnLosses(token).ConfigureAwait(false);
@@ -539,16 +529,13 @@ namespace SysBot.Pokemon.SV.BotRaid
                         return; // Exit the InnerLoop method after reboot and reset
                     }
                 }
-                // Ensure uptime is saved before exiting the loop
-                UpdateUptimeOnShutdown();
-
                 if (Settings.RaidSettings.TotalRaidsToHost > 0 && raidsHosted != 0)
                     Log("Total raids to host has been met.");
             }
             catch (Exception ex)
             {
                 Log($"An unexpected error occurred in InnerLoop: {ex.Message}");
-                UpdateUptimeOnShutdown(); // Ensure uptime is saved even if an error occurs
+                // Handle other exceptions as needed
             }
         }
 
@@ -556,9 +543,6 @@ namespace SysBot.Pokemon.SV.BotRaid
         {
             try
             {
-                // Save uptime before completely stopping
-                UpdateUptimeOnShutdown();
-
                 Directory.Delete("cache", true);
             }
             catch (Exception)
@@ -680,8 +664,6 @@ namespace SysBot.Pokemon.SV.BotRaid
             };
             EchoUtil.RaidEmbed(null, "", embed);
 
-            // Save uptime before restart
-            UpdateUptimeOnShutdown();
             await ReOpenGame(new PokeRaidHubConfig(), t).ConfigureAwait(false);
             await HardStop().ConfigureAwait(false);
             await Task.Delay(2_000, t).ConfigureAwait(false);
@@ -1101,15 +1083,30 @@ namespace SysBot.Pokemon.SV.BotRaid
 
                 RaidCount++;
                 raidCountData.TotalRaids++;
-
-                // Save updated raid count to the JSON file
-                raidStorage.SaveRaidCounts(raidCountData);
             }
             else
             {
                 Log("No trainers available to check win/loss status.");
             }
+
+            // Ensure uptime is updated regardless of raid result
+            UpdateUptime();
         }
+
+        private void UpdateUptime()
+        {
+            long currentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            long elapsedMinutes = (currentTime - raidCountData.LastRaidTimestamp) / 60;
+
+            if (elapsedMinutes > 0) // Ensure only positive increments
+            {
+                raidCountData.TotalUptimeMinutes += elapsedMinutes;
+                raidCountData.LastRaidTimestamp = currentTime;
+                raidStorage.SaveRaidCounts(raidCountData);
+                Log($"Uptime updated! Total uptime: {raidCountData.TotalUptimeMinutes} minutes.");
+            }
+        }
+
 
 
         private async Task OverrideTodaySeed(CancellationToken token)

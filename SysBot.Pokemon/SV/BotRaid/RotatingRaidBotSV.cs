@@ -1080,6 +1080,8 @@ namespace SysBot.Pokemon.SV.BotRaid
                     LossCount++;
                     raidCountData.Losses++;
                 }
+                raidCountData.TotalRaids++;
+                raidStorage.SaveRaidCounts(raidCountData); // Save after updating
 
             }
             else

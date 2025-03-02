@@ -633,10 +633,22 @@ namespace SysBot.Pokemon.SV.BotRaid
 
                 await Task.Delay(10_000, token).ConfigureAwait(false);
 
-                if (!await ProcessBattleActions(token))
+                for (int attempt = 0; attempt < 3; attempt++)
+                {
+                    if (await ProcessBattleActions(token))
+                    {
+                        Log($"Frame data received on attempt {attempt + 1}");
+                        break;
+                    }
+                    Log($"No frame data received on attempt {attempt + 1}, retrying...");
+                    await Task.Delay(5_000, token).ConfigureAwait(false);
+                }
+
+                if (!await IsInRaid(token))
                 {
                     throw new Exception("Failed to process battle actions");
                 }
+
 
                 bool isRaidCompleted = await HandleEndOfRaidActions(token);
                 if (!isRaidCompleted)

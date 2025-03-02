@@ -393,27 +393,6 @@ namespace SysBot.Pokemon.SV.BotRaid
                     {
                         // Initialize offsets at the start of the routine and cache them.
                         await InitializeSessionOffsets(token).ConfigureAwait(false);
-
-                        if (isRecoveringFromReboot)
-                        {
-                            Log("Recovering from reboot - ensuring online connectivity before proceeding.");
-                            if (!await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
-                            {
-                                Log("Not on overworld after reboot, attempting to return to overworld.");
-                                await RecoverToOverworld(token).ConfigureAwait(false);
-                            }
-
-                            if (!await ConnectToOnline(Hub.Config, token).ConfigureAwait(false))
-                            {
-                                Log("Failed to connect online after reboot, retrying the reboot process.");
-                                await PerformRebootAndReset(token).ConfigureAwait(false);
-                                return;
-                            }
-
-                            isRecoveringFromReboot = false; 
-                            Log("Successfully recovered online connectivity after reboot.");
-                        }
-
                         if (RaidCount == 0)
                         {
                             TodaySeed = BitConverter.ToUInt64(await SwitchConnection.ReadBytesAbsoluteAsync(RaidBlockPointerP, 8, token).ConfigureAwait(false), 0);
@@ -674,8 +653,6 @@ namespace SysBot.Pokemon.SV.BotRaid
             }
         }
 
-        private bool isRecoveringFromReboot = false;
-
         private async Task PerformRebootAndReset(CancellationToken t)
         {
             EmbedBuilder embed = new()
@@ -694,7 +671,6 @@ namespace SysBot.Pokemon.SV.BotRaid
             if (!t.IsCancellationRequested)
             {
                 Log("Restarting the inner loop.");
-                isRecoveringFromReboot = true; // Set flag to indicate we're recovering from reboot
                 await InnerLoop(t).ConfigureAwait(false);
             }
         }
@@ -2371,100 +2347,46 @@ namespace SysBot.Pokemon.SV.BotRaid
             var gifQuality = (AnimatedGif.GifQuality)Settings.EmbedToggles.GifQuality;
             var frameDelay = 180;
 
-            try
+            for (int i = 0; i < frameCount; i++)
             {
-                for (int i = 0; i < frameCount; i++)
-                {
-                    if (token.IsCancellationRequested)
-                    {
-                        Log("GIF capture was canceled.");
-                        return null;
-                    }
-
-                    byte[] bytes;
-                    try
-                    {
-                        bytes = await SwitchConnection.PixelPeek(token).ConfigureAwait(false) ?? Array.Empty<byte>();
-                    }
-                    catch (Exception ex)
-                    {
-                        Log($"Error while fetching frame {i + 1}/{frameCount}: {ex.Message}");
-                        if (i == 0)
-                            return null;
-                        break;
-                    }
-
-                    if (bytes.Length == 0)
-                    {
-                        Log($"No data received for frame {i + 1}/{frameCount}.");
-                        if (i == 0)
-                            return null;
-                        break;
-                    }
-
-                    try
-                    {
-                        using var ms = new MemoryStream(bytes);
-                        using var bitmap = new Bitmap(ms);
-                        var resizedFrame = bitmap.GetThumbnailImage(gifWidth, gifHeight, null, IntPtr.Zero);
-                        var frame = ((Bitmap)resizedFrame).Clone(new Rectangle(0, 0, resizedFrame.Width, resizedFrame.Height),
-                                                                System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
-                        gifFrames.Add(frame);
-                        resizedFrame.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        Log($"Error processing frame {i + 1}/{frameCount}: {ex.Message}");
-                        continue;
-                    }
-
-                    try
-                    {
-                        await Task.Delay(50, token).ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        Log("GIF capture delay was canceled.");
-                        break;
-                    }
-                }
-
-                if (gifFrames.Count == 0)
-                {
-                    Log("No frames were successfully captured for GIF.");
-                    return null;
-                }
-
-                using var outputMs = new MemoryStream();
+                byte[] bytes;
                 try
                 {
-                    using (var gif = new AnimatedGifCreator(outputMs, frameDelay))
-                    {
-                        foreach (var frame in gifFrames)
-                        {
-                            gif.AddFrame(frame, quality: gifQuality);
-                        }
-                    }
-                    return outputMs.ToArray();
+                    bytes = await SwitchConnection.PixelPeek(token).ConfigureAwait(false) ?? Array.Empty<byte>();
                 }
                 catch (Exception ex)
                 {
-                    Log($"Error creating GIF: {ex.Message}");
+                    Log($"Error while fetching pixels: {ex.Message}");
                     return null;
                 }
+
+                if (bytes.Length == 0)
+                {
+                    Log("No frame data received.");
+                    return null;
+                }
+
+                using var ms = new MemoryStream(bytes);
+                using var bitmap = new Bitmap(ms);
+                var resizedFrame = bitmap.GetThumbnailImage(gifWidth, gifHeight, null, IntPtr.Zero);
+                var frame = ((Bitmap)resizedFrame).Clone(new Rectangle(0, 0, resizedFrame.Width, resizedFrame.Height), System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
+                gifFrames.Add(frame);
+                resizedFrame.Dispose();
+
+                await Task.Delay(50, token);
             }
-            catch (Exception ex)
-            {
-                Log($"Unexpected error in GIF capture: {ex.Message}");
-                return null;
-            }
-            finally
+
+            using var outputMs = new MemoryStream();
+            using (var gif = new AnimatedGifCreator(outputMs, frameDelay))
             {
                 foreach (var frame in gifFrames)
                 {
+                    gif.AddFrame(frame, quality: (AnimatedGif.GifQuality)(int)gifQuality);
                     frame.Dispose();
                 }
             }
+
+            return outputMs.ToArray();
         }
 
         private async Task EnqueueEmbed(List<string>? names, string message, bool hatTrick, bool disband, bool upnext, bool raidstart, CancellationToken token)

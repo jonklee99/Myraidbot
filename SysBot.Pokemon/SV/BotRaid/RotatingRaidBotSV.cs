@@ -2694,7 +2694,7 @@ namespace SysBot.Pokemon.SV.BotRaid
                     });
                 }
 
-                embed.AddField($"**Raid #{RaidCount} is starting!**", players);
+                embed.AddField($"**Raid #{raidCountData.TotalRaids} is starting!**", players);
             }
             if (imageBytes != null)
             {

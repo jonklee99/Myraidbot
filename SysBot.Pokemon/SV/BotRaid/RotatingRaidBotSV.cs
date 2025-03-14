@@ -2483,7 +2483,7 @@ namespace SysBot.Pokemon.SV.BotRaid
             }
 
             string disclaimer = Settings.ActiveRaids.Count > 1
-                                ? $"Freemons.net"
+                                ? $"(Kevdog is a thief for stealing these raids)"
                                 : "";
 
             var turl = string.Empty;

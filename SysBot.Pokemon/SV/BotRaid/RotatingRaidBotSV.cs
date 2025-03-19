@@ -715,6 +715,7 @@ namespace SysBot.Pokemon.SV.BotRaid
             if (!t.IsCancellationRequested)
             {
                 Log("Restarting the inner loop.");
+                isRecoveringFromReboot = true; // Set flag to indicate we're recovering from reboot
                 await InnerLoop(t).ConfigureAwait(false);
             }
         }

@@ -695,6 +695,7 @@ namespace SysBot.Pokemon.SV.BotRaid
                 await PerformRebootAndReset(token);
             }
         }
+        private bool isRecoveringFromReboot = false;
 
         private async Task PerformRebootAndReset(CancellationToken t)
         {

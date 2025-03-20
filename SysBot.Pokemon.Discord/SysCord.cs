@@ -245,7 +245,7 @@ namespace SysBot.Pokemon.Discord
                 var embed = new EmbedBuilder()
                     .WithTitle("🎮 Raid Code")
                     .WithDescription($"## `{code}`\n\nPlease join quickly!") // `##` = Large header markdown
-                    .WithColor(Color.Gold)
+                    .WithColor(new Color(0, 255, 255))
                     .WithFooter(footer => footer.Text = "Good luck, Trainer!")
                     .Build();
 

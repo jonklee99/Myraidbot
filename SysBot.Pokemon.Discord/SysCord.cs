@@ -240,9 +240,17 @@ namespace SysBot.Pokemon.Discord
 
             try
             {
-                // Send DM with the code
+                // Send DM with the code as an embed
                 var dmChannel = await reaction.User.Value.CreateDMChannelAsync();
-                await dmChannel.SendMessageAsync($"Here's your raid code: **{code}**\nPlease join quickly!");
+                var embed = new EmbedBuilder()
+                    .WithTitle("🎮 Raid Code")
+                    .WithDescription($"## `{code}`\n\nPlease join quickly!") // `##` = Large header markdown
+                    .WithColor(Color.Gold)
+                    .WithFooter(footer => footer.Text = "Good luck, Trainer!")
+                    .Build();
+
+                await dmChannel.SendMessageAsync(embed: embed);
+
 
                 // Remove the user's reaction to keep things tidy (if we have permission)
                 try

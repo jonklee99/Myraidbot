@@ -9,6 +9,7 @@ using SysBot.Pokemon.Discord.Helpers;
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -211,6 +212,37 @@ namespace SysBot.Pokemon.Discord
                     name = name[..gen];
             }
 
+            SharedRaidCodeHandler.UpdateMessageReactionCallback = async (messageId, channelId, isActive) =>
+            {
+                try
+                {
+                    var channel = await _client.GetChannelAsync(channelId) as IMessageChannel;
+                    if (channel != null)
+                    {
+                        var message = await channel.GetMessageAsync(messageId) as IUserMessage;
+                        if (message != null)
+                        {
+                            await message.RemoveAllReactionsAsync();
+
+                            if (isActive)
+                            {
+                                await message.AddReactionAsync(new Emoji("✅"));
+                                Log(new LogMessage(LogSeverity.Info, "RaidEmbed", $"Added green check reaction to message {messageId} in channel {channelId}"));
+                            }
+                            else
+                            {
+                                await message.AddReactionAsync(new Emoji("🚫"));
+                                Log(new LogMessage(LogSeverity.Info, "RaidEmbed", $"Added red X reaction to message {messageId} in channel {channelId}"));
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log(new LogMessage(LogSeverity.Error, "RaidEmbed", $"Error updating reactions: {ex.Message}"));
+                }
+            };
+
             // Subscribe a handler to see if a message invokes a command.
             _client.Ready += LoadLoggingAndEcho;
             _client.MessageReceived += HandleMessageAsync;
@@ -224,38 +256,98 @@ namespace SysBot.Pokemon.Discord
             // Ignore reactions from bots (including our own)
             if (reaction.User.Value.IsBot)
                 return;
-
-            // Check if this is a raid code request (🎮 reaction)
-            if (reaction.Emote.Name != "🎮")
+            if (reaction.Emote.Name != "✅")
                 return;
-
-            // Check if this message is our current active raid
             if (!SharedRaidCodeHandler.IsActiveRaidMessage(reaction.MessageId))
                 return;
 
-            // Get the raid code
-            var code = SharedRaidCodeHandler.GetCurrentRaidCode();
+            var code = SharedRaidCodeHandler.GetRaidCodeForMessage(reaction.MessageId);
             if (string.IsNullOrEmpty(code))
                 return;
-
+            var raidInfoDict = SharedRaidCodeHandler.GetRaidInfoDict(reaction.MessageId);
             try
             {
-                // Send DM with the code as an embed
                 var dmChannel = await reaction.User.Value.CreateDMChannelAsync();
+                bool isShiny = raidInfoDict != null &&
+                              raidInfoDict.TryGetValue("IsShiny", out var shinyStr) &&
+                              bool.TryParse(shinyStr, out var shinyBool) &&
+                              shinyBool;
+
+                var embedColor = isShiny ? Color.Gold : Color.Blue;
+                string thumbnailUrl = raidInfoDict?.TryGetValue("ThumbnailUrl", out var thumbUrl) == true && !string.IsNullOrEmpty(thumbUrl)
+                    ? thumbUrl
+                    : "https://raw.githubusercontent.com/bdawg1989/sprites/main/imgs/combat.png";
+
                 var embed = new EmbedBuilder()
-                    .WithTitle("🎮 Raid Code")
-                    .WithDescription($"## `{code}`\n\nPlease join quickly!") // `##` = Large header markdown
-                    .WithColor(new Color(0, 255, 255))
-                    .WithFooter(footer => footer.Text = "Good luck, Trainer!")
-                    .Build();
+                {
+                    Color = embedColor,
+                    Title = $"**Raid Code: {code}**",
+                    Description = "Please join quickly! The raid will start soon.",
+                    ThumbnailUrl = thumbnailUrl
+                };
 
-                await dmChannel.SendMessageAsync(embed: embed);
+                if (raidInfoDict != null)
+                {
+                    string raidTitle = raidInfoDict.TryGetValue("RaidTitle", out var title) ? title : "Pokémon Raid";
+                    string teraIconUrl = raidInfoDict.TryGetValue("TeraIconUrl", out var iconUrl) ? iconUrl : "";
 
+                    embed.WithAuthor(new EmbedAuthorBuilder()
+                    {
+                        Name = raidTitle,
+                        IconUrl = teraIconUrl
+                    });
 
-                // Remove the user's reaction to keep things tidy (if we have permission)
+                    StringBuilder statsBuilder = new StringBuilder();
+                    if (raidInfoDict.TryGetValue("Level", out var level)) statsBuilder.AppendLine($"**Level**: {level}");
+                    if (raidInfoDict.TryGetValue("Gender", out var gender)) statsBuilder.AppendLine($"**Gender**: {gender}");
+                    if (raidInfoDict.TryGetValue("Nature", out var nature)) statsBuilder.AppendLine($"**Nature**: {nature}");
+                    if (raidInfoDict.TryGetValue("Ability", out var ability)) statsBuilder.AppendLine($"**Ability**: {ability}");
+                    if (raidInfoDict.TryGetValue("IVs", out var ivs)) statsBuilder.AppendLine($"**IVs**: {ivs}");
+                    if (raidInfoDict.TryGetValue("Scale", out var scale)) statsBuilder.AppendLine($"**Scale**: {scale}");
+
+                    if (statsBuilder.Length > 0)
+                    {
+                        embed.AddField("**__Stats__**", statsBuilder.ToString(), true);
+                    }
+                    StringBuilder movesBuilder = new StringBuilder();
+                    if (raidInfoDict.TryGetValue("Moves", out var moves) && !string.IsNullOrEmpty(moves))
+                    {
+                        movesBuilder.AppendLine(moves);
+
+                        if (raidInfoDict.TryGetValue("ExtraMoves", out var extraMoves) && !string.IsNullOrEmpty(extraMoves))
+                        {
+                            movesBuilder.AppendLine("**Extra Moves:**");
+                            movesBuilder.AppendLine(extraMoves);
+                        }
+                    }
+
+                    if (movesBuilder.Length > 0)
+                    {
+                        embed.AddField("**__Moves__**", movesBuilder.ToString(), true);
+                    }
+                    else
+                    {
+                        embed.AddField("**__Moves__**", "No Moves To Display", true);
+                    }
+                    if (raidInfoDict.TryGetValue("DifficultyLevel", out var diffLevelStr) &&
+                        int.TryParse(diffLevelStr, out var diffLevel) &&
+                        diffLevel == 7 &&
+                        raidInfoDict.TryGetValue("RaidMechanics", out var mechanics) &&
+                        !string.IsNullOrEmpty(mechanics))
+                    {
+                        embed.AddField("**__7★ Raid Mechanics__**", mechanics, false);
+                    }
+                }
+
+                embed.WithFooter(new EmbedFooterBuilder()
+                {
+                    Text = $"Code requested at {DateTime.Now:yyyy-MM-dd HH:mm:ss}"
+                });
+                await dmChannel.SendMessageAsync(embed: embed.Build());
+
                 try
                 {
-                    var channel = await _client.GetChannelAsync(SharedRaidCodeHandler.GetCurrentChannelId()) as IMessageChannel;
+                    var channel = await _client.GetChannelAsync(originChannel.Id) as IMessageChannel;
                     if (channel != null)
                     {
                         var message = await channel.GetMessageAsync(reaction.MessageId) as IUserMessage;

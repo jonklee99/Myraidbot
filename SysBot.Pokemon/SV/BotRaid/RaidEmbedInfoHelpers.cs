@@ -1,7 +1,5 @@
 ﻿using PKHeX.Core;
 
-namespace SysBot.Pokemon.SV.BotRaid;
-
 internal static class RaidEmbedInfoHelpers
 {
     public static string RaidEmbedTitle = string.Empty;

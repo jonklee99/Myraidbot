@@ -560,13 +560,13 @@ namespace SysBot.Pokemon.Discord.Commands.Bots
             }
             if (level < 1 || level > 7) 
             {
-                await ReplyAsync("Invalid raid level. Please enter a level between 1 and 7.").ConfigureAwait(false); 
+                await ReplyAsync("Invalid raid level. Please enter a level between 3 and 6.").ConfigureAwait(false); 
                 return;
             }
             var gameProgress = ConvertToGameProgress(storyProgressLevel);
             if (gameProgress == GameProgress.None)
             {
-                await ReplyAsync("Invalid Story Progress Level. Please enter a value between 1 and 6.").ConfigureAwait(false);
+                await ReplyAsync("Invalid Story Progress Level. Please enter a value between 3 and 6.").ConfigureAwait(false);
                 return;
             }
             var settings = Hub.Config.RotatingRaidSV;
@@ -755,7 +755,7 @@ namespace SysBot.Pokemon.Discord.Commands.Bots
                 5 => "5☆ Unlocked Progress",
                 4 => "4☆ Unlocked Progress",
                 3 => "3☆ Unlocked Progress",
-                _ => throw new ArgumentException("Invalid Story Progress Level... where are you getting your seeds?\nUse <https://genpkm.com/seeds.html> to get them."),
+                _ => throw new ArgumentException("Invalid Story Progress Level... where are you getting your seeds?\nUse <https://genpkm.com/raids/seeds/> to get them.\n**For 1 or 2 star raids use 3 and 3 at the end***\n\n***Example: $rv 0002A237 3 3**"),
             };
         }
 

@@ -13,6 +13,7 @@ namespace SysBot.Pokemon.Discord
             var str = SysCordSettings.Settings.HelloResponse;
             var msg = string.Format(str, Context.User.Mention);
             await ReplyAsync(msg).ConfigureAwait(false);
+            await Context.Message.DeleteAsync();
         }
     }
 }

@@ -64,6 +64,7 @@ namespace SysBot.Pokemon.Discord
             var bot = SysCord<T>.Runner.GetBot(ip);
             if (bot == null)
             {
+                await Context.Message.DeleteAsync();
                 await ReplyAsync($"No bot has that IP address ({ip}).").ConfigureAwait(false);
                 return;
             }
@@ -81,6 +82,7 @@ namespace SysBot.Pokemon.Discord
             var bot = SysCord<T>.Runner.GetBot(ip);
             if (bot == null)
             {
+                await Context.Message.DeleteAsync();
                 await ReplyAsync($"No bot has that IP address ({ip}).").ConfigureAwait(false);
                 return;
             }
@@ -133,6 +135,7 @@ namespace SysBot.Pokemon.Discord
             var bot = SysCord<T>.Runner.GetBot(ip);
             if (bot == null)
             {
+                await Context.Message.DeleteAsync();
                 await ReplyAsync($"No bot has that IP address ({ip}).").ConfigureAwait(false);
                 return;
             }

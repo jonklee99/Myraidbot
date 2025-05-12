@@ -398,7 +398,7 @@ namespace SysBot.Pokemon.Discord
             var mgr = Manager;
             if (!mgr.CanUseCommandUser(msg.Author.Id))
             {
-                await msg.Channel.SendMessageAsync("You are not permitted to use this command.").ConfigureAwait(false);
+                await msg.Channel.SendMessageAsync($"{msg.Author.Mention}, You are blacklisted from using the bots! Contact the bot owner <@754156803906076712>!").ConfigureAwait(false);
                 return true;
             }
             if (!mgr.CanUseCommandChannel(msg.Channel.Id) && msg.Author.Id != mgr.Owner)

@@ -50,7 +50,7 @@ namespace SysBot.Pokemon.Discord
                 $"- {Format.Bold("Guilds")}: {Context.Client.Guilds.Count}\n" +
                 $"- {Format.Bold("Channels")}: {Context.Client.Guilds.Sum(g => g.Channels.Count)}\n" +
                 $"- {Format.Bold("Users")}: {Context.Client.Guilds.Sum(g => g.MemberCount)}\n" +
-                $"{Format.Bold($"\nVisit [NotPaldea.net]({support}) for more information.")}\n"
+                $"{Format.Bold($"\nVisit [Freemons.net]({support}) for more information.")}\n"
                 );
 
             await ReplyAsync("Here's a bit about me!", embed: builder.Build()).ConfigureAwait(false);

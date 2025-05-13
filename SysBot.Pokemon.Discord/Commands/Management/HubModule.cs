@@ -37,6 +37,7 @@ namespace SysBot.Pokemon.Discord
             });
 
             await ReplyAsync("Bot Status", false, builder.Build()).ConfigureAwait(false);
+            await Context.Message.DeleteAsync();
         }
 
         private static string SummarizeBots(IReadOnlyCollection<RoutineExecutor<PokeBotState>> bots)

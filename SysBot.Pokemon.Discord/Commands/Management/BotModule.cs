@@ -28,6 +28,7 @@ namespace SysBot.Pokemon.Discord
             var summaries = bots.Select(GetDetailedSummary);
             var lines = string.Join(Environment.NewLine, summaries);
             await ReplyAsync(Format.Code(lines)).ConfigureAwait(false);
+            await Context.Message.DeleteAsync();
         }
 
         private string GetBotIPFromJsonConfig()

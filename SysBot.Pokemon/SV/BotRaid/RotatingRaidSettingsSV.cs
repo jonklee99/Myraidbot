@@ -344,31 +344,31 @@ namespace SysBot.Pokemon
             public enum LanguageOptions
             {
                 [Description("Japanese")]
-                Japanese = 0,
+                Japanese = 1,
 
                 [Description("English")]
-                English = 1,
+                English = 2,
 
                 [Description("French")]
-                French = 2,
+                French = 3,
 
                 [Description("Italian")]
-                Italian = 3,
+                Italian = 4,
 
                 [Description("German")]
-                German = 4,
+                German = 5,
 
                 [Description("Spanish")]
-                Spanish = 5,
+                Spanish = 7,
 
                 [Description("Korean")]
-                Korean = 6,
+                Korean = 8,
 
                 [Description("Chinese (Simplified)")]
-                ChineseS = 7,
+                ChineseS = 9,
 
                 [Description("Chinese (Traditional)")]
-                ChineseT = 8
+                ChineseT = 10
             }
 
             [Category(Hosting), Description("The full string for the male gender emoji. Leave blank to not use.")]
@@ -607,13 +607,13 @@ namespace SysBot.Pokemon
                 _raidLimit = Math.Max(1, Math.Min(3, value));
             }
 
-            [Category(FeatureToggle), Description("Set the action you would want your bot to perform. 'AFK' will make the bot idle, while 'MashA' presses A every 3.5s")]
+            [Category(FeatureToggle), Description("Set the action you would want your bot to perform. 'AFK' will make the bot idle, while 'MashA' presses A every 1s")]
             [DisplayName("A Button Action")]
             public RaidAction Action { get; set; } = RaidAction.MashA;
 
-            [Category(FeatureToggle), Description("Delay for the 'MashA' action in seconds.  [3.5 is default]")]
+            [Category(FeatureToggle), Description("Delay for the 'MashA' action in seconds.  [1 is default]")]
             [DisplayName("A Button Delay (Seconds)")]
-            public double MashADelay { get; set; } = 1.0;  // Default value set to 1.0 seconds
+            public double MashADelay { get; set; } = 1;  // Default value set to 1.0 seconds
 
             [Category(FeatureToggle), Description("Extra time in milliseconds to wait after Lobby Disbands in Raid before deciding to not capture the raidmon.")]
             [DisplayName("Extra Time To Disband Raid")]

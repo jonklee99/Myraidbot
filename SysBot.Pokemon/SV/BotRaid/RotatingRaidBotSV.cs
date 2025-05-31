@@ -2322,10 +2322,7 @@ namespace SysBot.Pokemon.SV.BotRaid
         private async Task<string> GetRaidCode(CancellationToken token)
         {
             var data = await SwitchConnection.PointerPeek(6, Offsets.TeraRaidCodePointer, token).ConfigureAwait(false);
-            var code = Encoding.ASCII.GetString(data);
-            _teraRaidCode = _settings.LobbyOptions.RaidCodeCase == RaidCodeCaseOptions.Uppercase
-                ? code.ToUpper()
-                : code.ToLower();
+            _teraRaidCode = Encoding.ASCII.GetString(data);
             return $"{_teraRaidCode}";
         }
 
